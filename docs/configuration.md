@@ -49,5 +49,26 @@ Environment="HTTP_PROXY=http://username:password@proxy:port" "HTTPS_PROXY=http:/
 If you have special charecters in your password, please use HTML UTF-8 notation of the special charecters (Example: '@' is represented as %40)
 
 ### Remote Access
-Remote access to Docker daemon is configured in Docker daemon statup options. Default Startup options are available at /lib/systemd/system/docker.service or /usr/lib/systemd/system/docker.service depending on docker installation.
-Standard overrides can be configured to /etc/systemd/system/docker.service. But recommended way to override daemon config is by creating a /etc/systemd/system/docker.service.d/override.conf file and edit only relevant option
+Remote access to Docker daemon is configured in Docker daemon statup options. You can override the daemon settings by adding relevant options to /etc/systemd/system/docker.service.d/override.conf.
+
+The docker socket can be configured on any port with the dockerd -H option. Common docker ports are:
+2375: unencrypted docker socket, remote root passwordless access to the host.
+2376: tls encrypted socket, most likely this is your CI servers 4243 port as a modification of the https 443 port
+2377: swarm mode socket, for swarm managers, not for docker clients
+5000: docker registry service
+4789 and 7946: overlay networking
+
+Only the first two are set with dockerd -H, swarm mode can be configured as part of docker swarm init --listen-addr or docker swarm join --listen-addr.
+
+To enable access to the docker daemon from remote you need to append following parameters to line containing ExecStart=/usr/bin/dockerd
+```
+-H tcp://0.0.0.0:4243 -H tcp://0.0.0.0:2375 -H fd://
+```
+I strongly recommend disabling or restricting 2375 port to specific clients and securing your docker socket. It's trivial to remotely exploit this port to gain full root access without a password from remote. The command to do so is as simple as:
+```
+docker -H $your_ip:2375 run -it --rm  --privileged -v /:/rootfs --net host --pid host busybox
+````
+That can be run on any machine with a docker client to give someone a root shell on your host with the full filesystem available under /rootfs, your network visible under ip a, and every process visible under ps -ef.
+
+To setup TLS security on the docker socket, see these instructions. 
+https://docs.docker.com/engine/security/https/

@@ -47,3 +47,7 @@ Create a file called /etc/systemd/system/docker.service.d/http-proxy.conf that a
 Environment="HTTP_PROXY=http://username:password@proxy:port" "HTTPS_PROXY=http://username:password@proxy:port" "FTP_PROXY=ftp://username:password@proxy:port" "NO_PROXY=localhost,127.0.0.0/8,127.0.1.1,local.home"
 ```
 If you have special charecters in your password, please use HTML UTF-8 notation of the special charecters (Example: '@' is represented as %40)
+
+### Remote Access
+Remote access to Docker daemon is configured in Docker daemon statup options. Default Startup options are available at /lib/systemd/system/docker.service or /usr/lib/systemd/system/docker.service depending on docker installation.
+Standard overrides can be configured to /etc/systemd/system/docker.service. But recommended way to override daemon config is by creating a /etc/systemd/system/docker.service.d/override.conf file and edit only relevant option

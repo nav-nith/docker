@@ -40,3 +40,10 @@ ExecStart=
 ExecStart=/usr/bin/dockerd --dns 8.8.8.8 --dns 8.8.8.4
 ```
 ### Configure Proxy
+If you are behind an HTTP proxy server, for example in corporate settings, you will need to add this configuration in the Docker systemd service file.
+Create a file called /etc/systemd/system/docker.service.d/http-proxy.conf that adds environment variables to define proxy as follows:
+```
+[Service]
+Environment="HTTP_PROXY=http://username:password@proxy:port" "HTTPS_PROXY=http://username:password@proxy:port" "FTP_PROXY=ftp://username:password@proxy:port" "NO_PROXY=localhost,127.0.0.0/8,127.0.1.1,local.home"
+```
+If you have special charecters in your password, please use HTML UTF-8 notation of the special charecters (Example: '@' is represented as %40)

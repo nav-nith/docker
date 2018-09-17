@@ -13,6 +13,7 @@ export no_proxy=localhost,127.0.0.0/8,127.0.1.1,local.home
 2. Persitant Storage
 All Jenkins data and configurations required to be stored in a persistant drive to esure the data remains intact between restart of container.
 This can be done by creating a folder in host PC and mounting it as a volume when starting the jenkins container.
+
 For example:
  Create a folder ~/docker/jenkins/jenkins0 in user home which will be mounted with -v option in the command used for starting container.
 

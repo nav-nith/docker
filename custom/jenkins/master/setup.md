@@ -19,6 +19,54 @@ For example:
 
 ## Start Container
 ```
-docker run --name jenkins0 -d --restart=always -m 4G -p 8080:8080 -p 50000:50000 -e http_proxy=$http_proxy -e https_proxy=$https_proxy -e ftp_proxy=$ftp_proxy -e socks_proxy=$socks_proxy -e no_proxy=$no_proxy -e "JENKINS_SLAVE_AGENT_PORT=50000" -e "TZ=Asia/Calcutta" -e "JENKINS_OPTS=--prefix=/jenkins0" -e "JAVA_OPTS=-Dgroovy.use.classvalue=true -Dhudson.plugins.active_directory.ActiveDirectorySecurityRealm.forceLdaps=true -XX:+AlwaysPreTouch -XX:NumberOfGCLogFiles=5 -XX:+UseGCLogFileRotation -XX:GCLogFileSize=20m -Djava.awt.headless=true -server -Xmx2048m -Xms1024m -XX:MaxPermSize=512m -XX:PermSize=256m -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled" -v ~/docker/jenkins/jenkins0:/var/jenkins_home docker pull jenkins/jenkins
+docker run --name jenkins0 -d --restart=always -m 4G -p 127.0.0.1:8080:8080 -p 50000:50000 -e http_proxy=$http_proxy -e https_proxy=$https_proxy -e ftp_proxy=$ftp_proxy -e socks_proxy=$socks_proxy -e no_proxy=$no_proxy -e "JENKINS_SLAVE_AGENT_PORT=50000" -e "TZ=Asia/Calcutta" -e "JENKINS_OPTS=--prefix=/jenkins0" -e "JAVA_OPTS=-Dgroovy.use.classvalue=true -Dhudson.plugins.active_directory.ActiveDirectorySecurityRealm.forceLdaps=true -XX:+AlwaysPreTouch -XX:NumberOfGCLogFiles=5 -XX:+UseGCLogFileRotation -XX:GCLogFileSize=20m -Djava.awt.headless=true -server -Xmx2048m -Xms1024m -XX:MaxPermSize=512m -XX:PermSize=256m -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled" -v ~/docker/jenkins/jenkins0:/var/jenkins_home docker pull jenkins/jenkins
 ```
+## SSL Certificate Generation
+Following instructions will enable you to generate Self Signed Cerificate files
+
 ## Configuring Host NGINX for Proxy-pass
+NGINX site configuration files are located at */etc/nginx/site-available/*. Modify *default* file as follows to proxy pass traffic to jenkins listening on localhost port 8080.
+```
+upstream jenkins00 {
+  server localhost:8080 fail_timeout=0;
+}
+
+server {
+  listen 80;
+  listen [::]:80;
+
+  server_name <fqdn server name>;
+  return 301 https://$server_name$request_uri;
+}
+
+server {
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  
+  server_name <fqdn server name>
+  #error_page 497 301 =307 https://$server_name:443$request_uri;
+  
+  #SSL Configuration
+  ssl on;
+  ssl_protocol TLSv1 TLSv1.1 TLSv1.2;
+  ssl_certificate /etc/nginx/.ssl/<certificate file name>.crt;
+  ssl_certificate_key /etc/nginx/.ssl/<key file name>.key;
+  #ssl_clinet_certificate /etc/nginx/.ssl/<client certificate file name>.crt;
+  
+  location ^~ /jenkins0/ {
+    # convert inbount WAN
+    proxy_pass http://jenkins00/jenkins0/;
+    
+    # Rewrite HTTPS requests from WAN to HTTP requests on LAN
+    proxy_redirect http:// https://;
+    
+    senfile off;
+    
+    proxy_set_header Host $host:$server_port;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header
+    
+  }
+  
+}
+```

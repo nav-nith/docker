@@ -22,7 +22,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
 ### Creating Override.conf
-Override.conf file is created in path /etc/systemd/system/docker.service.d/override.conf
+Override.conf file is created in path /etc/systemd/system/docker.service.d/override.conf. Please note that you may need to create the directories if the path is not available by default.
 Add followig lines to override.conf to ensure previous ExecStart defined in default config file /usr/lib/systemd/system/docker.service is invalidated before setting new value:
 ```
 [Service]

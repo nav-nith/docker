@@ -36,6 +36,10 @@ For containers starting in private network, the DNS settings required to be conf
 ```
 --dns <dns IP1> --dns <dns IP2>
 ```
+In Ubuntu, You can use nmcli command to get the DNS settings as follows
+```
+nmcli device show <network interface>
+```
 Exampmple:
 Your override file will look as follows when you add google DNS
 ```
